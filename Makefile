@@ -14,13 +14,19 @@
 
 all: docker push plot
 
-PLOTTER_DOCKER_IMAGE       := girishkalele/netperf-plotperf:1.0
+PLOTTER_DOCKER_IMAGE       := valdemon/netperf-plotperf:latest
 
-docker: 
+Y_RANGE ?= 45000
+SUFFIX ?= netperf-latest
+TESTCASE ?= netperf-latest
+INPUT_CSV ?= $(SUFFIX).csv
+INPUT_DIR ?= .
+
+docker:
 	mkdir -p Dockerbuild && \
 	cp -f Dockerfile Dockerbuild/ && \
 	cp -f plotperf.py Dockerbuild/ &&\
-	docker build -t $(PLOTTER_DOCKER_IMAGE) Dockerbuild/ 
+	docker build -t $(PLOTTER_DOCKER_IMAGE) Dockerbuild/
 
 push: docker
 	gcloud docker push $(PLOTTER_DOCKER_IMAGE)
@@ -28,8 +34,8 @@ push: docker
 clean:
 	@rm -f Dockerbuild/*
 
-# Use this target 'plot' to run the docker container that will pick up netperf-latest.csv and render it into png and svg images
-plot: netperf-latest.csv
-	mkdir -p tmp && cp netperf-latest.csv tmp/ &&\
-	docker run --detach=false -v `pwd`/tmp:/plotdata $(PLOTTER_DOCKER_IMAGE) --csv /plotdata/netperf-latest.csv --suffix netperf-latest &&\
+# Use this target 'plot' to run the docker container that will pick up $(INPUT_CSV) and render it into png and svg images
+plot: $(INPUT_DIR)/$(INPUT_CSV)
+	mkdir -p tmp && cp $(INPUT_DIR)/$(INPUT_CSV) tmp/ &&\
+	docker run --detach=false -v `pwd`/tmp:/plotdata $(PLOTTER_DOCKER_IMAGE) --csv /plotdata/$(INPUT_CSV) --suffix $(SUFFIX) -y $(Y_RANGE) -t $(TESTCASE) &&\
 	cp tmp/* .

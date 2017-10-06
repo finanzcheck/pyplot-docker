@@ -37,6 +37,10 @@ parser.add_option("-o", "--outputdir", dest="outputdir", metavar="DIR",
                   help="Output Directory", default="/plotdata")
 parser.add_option("-s", "--suffix", dest="suffix",
                   help="Generated file suffix")
+parser.add_option("-y", "--yrange", type="int", dest="yrange",
+                  default=45000, help="The Y axis range")
+parser.add_option("-t", "--testcase", dest="testcase",
+                  help="Testcase name")
 (options, args) = parser.parse_args()
 
 def getData(filename):
@@ -65,12 +69,13 @@ def convert_float(l):
   return rl
 
 if __name__ == "__main__":
+  testcase = options.testcase if options.testcase else options.suffix
   data = getData(options.csvfile)
 
   x_data = convert_float(data[0][2:])
 
   plt.figure(figsize=(16,6))
-  plt.axis([0, 1500, 0, 45000])
+  plt.axis([0, 1500, 0, options.yrange])
   chart = plt.subplot(111)
   color_index = 0
   for n in range(1, len(data)):
@@ -80,9 +85,9 @@ if __name__ == "__main__":
     chart.plot(x_data, y_dataset, marker=".", label=data[n][0], color=colors[color_index], linewidth=1.5)
     color_index += 1
 
-  plt.xlabel("{0} - MSS or Packet Size".format(options.suffix))
+  plt.xlabel("{0} - MSS or Packet Size".format(testcase))
   plt.ylabel("Mbits/sec")
-  plt.title(options.suffix)
+  plt.title(testcase)
 
   # Shrink height by 10% on the bottom
   box = chart.get_position()
@@ -112,8 +117,8 @@ if __name__ == "__main__":
   plt.yticks(numpy.arange(len(data)-1),
              barlabels)
   plt.grid(True)
-  plt.title('Network Performance - Testcase {0}'.format(options.suffix))
-  plt.xlabel("Testcase {0} - Mbits/sec".format(options.suffix))
+  plt.title('Network Performance - Testcase {0}'.format(testcase))
+  plt.xlabel("Testcase {0} - Mbits/sec".format(testcase))
   for ext in [ "png", "svg" ]:
     fname = os.path.join(options.outputdir, "{0}.bar.{1}".format(options.suffix, ext))
     plt.savefig(fname, dpi=100)

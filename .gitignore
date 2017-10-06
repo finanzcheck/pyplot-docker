@@ -87,3 +87,14 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Temp dir
+tmp/
+
+# Dockerbuild
+Dockerbuild/
+
+# Usage related files
+*.svg
+*.png
+*.csv
